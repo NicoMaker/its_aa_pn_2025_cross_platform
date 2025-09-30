@@ -1,1 +1,2 @@
-# its_aa_pn_2025_cross_platform
+A sample command-line application with an entrypoint in `bin/`, library code
+in `lib/`, and example unit test in `test/`.

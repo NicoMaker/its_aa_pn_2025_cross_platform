@@ -8,10 +8,12 @@ class Animal {
     required this.lastVisitAt,
     required this.owner,
     required this.clinic,
+    this.deathDate,
   });
   String name;
   DateTime birthDate;
   DateTime lastVisitAt;
+  DateTime? deathDate;
   Person owner;
   Clinic clinic;
 }

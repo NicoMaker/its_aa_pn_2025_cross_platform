@@ -43,21 +43,17 @@ class _MyHomePageState extends State<MyHomePage> {
               // TODO: implement a function that resets all state to initial
               print("reset");
             },
-            label: const Text(
-              'Reset All',
-              style: TextStyle(color: Colors.white),
-            ),
+            label: const Text('Reset All'),
           ),
+          SizedBox(width: 40),
           ElevatedButton.icon(
             icon: Icon(Icons.invert_colors),
             onPressed: () {
               // TODO implement a function that inverts all states
             },
-            label: const Text(
-              'Invert All',
-              style: TextStyle(color: Colors.white),
-            ),
+            label: const Text('Invert All'),
           ),
+          SizedBox(width: 40),
         ],
       ),
       body: Center(
@@ -74,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton.large(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO implement a function that adds a checkbox to state
         },

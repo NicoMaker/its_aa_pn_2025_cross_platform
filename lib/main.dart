@@ -28,8 +28,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool _isChecked = false;
-  void _incrementCounter() {}
+  final List<bool> _checkboxes = [
+    true,
+    false,
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false,
+    true,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -41,32 +54,17 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: ListView(
           children: [
-            Center(
-              child: ListTile(
-                leading: Checkbox(
-                  value: _isChecked,
-                  onChanged: (value) {
-                    setState(() {
-                      _isChecked = value!;
-                    });
-                  },
-                ),
-                title: Text("titolo"),
-                subtitle: Text("contenuto blablabla"),
-                trailing: Text("14/10/2025"),
+            for (final (i, element) in _checkboxes.indexed)
+              Checkbox(
+                value: element,
+                onChanged: (value) {
+                  setState(() {
+                    _checkboxes[i] = value!;
+                  });
+                },
               ),
-            ),
-            Center(child: ListTile(title: Text("2"))),
-            Center(child: ListTile(title: Text("3"))),
-            Center(child: ListTile(title: Text("4"))),
-            Center(child: ListTile(title: Text("5"))),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Add a TODO',
-        child: const Icon(Icons.add),
       ),
     );
   }

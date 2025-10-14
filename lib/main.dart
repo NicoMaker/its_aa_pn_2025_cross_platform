@@ -28,21 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<bool> _checkboxes = [
-    true,
-    false,
-    true,
-    false,
-    true,
-    false,
-    false,
-    false,
-    true,
-    true,
-    false,
-    false,
-    true,
-  ];
+  // TODO define your state
 
   @override
   Widget build(BuildContext context) {
@@ -50,21 +36,49 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          ElevatedButton.icon(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              // TODO: implement a function that resets all state to initial
+              print("reset");
+            },
+            label: const Text(
+              'Reset All',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          ElevatedButton.icon(
+            icon: Icon(Icons.invert_colors),
+            onPressed: () {
+              // TODO implement a function that inverts all states
+            },
+            label: const Text(
+              'Invert All',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: ListView(
           children: [
-            for (final (i, element) in _checkboxes.indexed)
-              Checkbox(
-                value: element,
-                onChanged: (value) {
-                  setState(() {
-                    _checkboxes[i] = value!;
-                  });
-                },
-              ),
+            // TODO iterate on your state
+            Checkbox(
+              value: true, // TODO use state
+              onChanged: (value) {
+                // TODO implement a function that inverts this checkbox
+              },
+            ),
           ],
         ),
+      ),
+
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () {
+          // TODO implement a function that adds a checkbox to state
+        },
+        child: Icon(Icons.add),
       ),
     );
   }

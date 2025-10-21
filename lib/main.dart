@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:its_aa_pn_2025_cross_platform/todo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +29,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // TODO define your state
+  final _list = <Todo>[];
+  String? _text;
 
   @override
   Widget build(BuildContext context) {
@@ -40,42 +42,90 @@ class _MyHomePageState extends State<MyHomePage> {
           ElevatedButton.icon(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              // TODO: implement a function that resets all state to initial
-              print("reset");
+              setState(() {
+                _list.clear();
+              });
             },
             label: const Text('Reset All'),
           ),
-          SizedBox(width: 40),
+          SizedBox(width: 8),
           ElevatedButton.icon(
             icon: Icon(Icons.invert_colors),
             onPressed: () {
-              // TODO implement a function that inverts all states
+              setState(() {
+                for (var i = 0; i < _list.length; i++) {
+                  _list[i].isDone = !_list[i].isDone;
+                }
+              });
             },
             label: const Text('Invert All'),
           ),
-          SizedBox(width: 40),
+          SizedBox(width: 20),
         ],
       ),
       body: Center(
         child: ListView(
           children: [
-            // TODO iterate on your state
-            Checkbox(
-              value: true, // TODO use state
-              onChanged: (value) {
-                // TODO implement a function that inverts this checkbox
-              },
-            ),
+            if (_list.isEmpty) //
+              Text("non c'è niente"),
+            for (final (i, todo) in _list.indexed)
+              CheckboxListTile(
+                value: todo.isDone,
+                title: Text(todo.title),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _list[i].isDone = value;
+                  });
+                },
+              ),
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO implement a function that adds a checkbox to state
-        },
+        onPressed: _createTodo,
         child: Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _createTodo() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Column(
+            children: [
+              Text("inserisci qui il titolo"),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: "inserisci almeno 3 caratteri",
+                ),
+                onChanged: (value) {
+                  _text = value;
+                  print(_text);
+                },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  print(_text);
+                  if (_text == null) return;
+                  if (_text!.isEmpty) return;
+                  if (_text!.length < 3) return;
+                  Navigator.pop(context, _text);
+                },
+                child: Text("salva!"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result == null) return; // significa che il dialog è stato
+    final newTodo = Todo(createdAt: DateTime.now(), title: result);
+    setState(() {
+      _list.add(newTodo);
+    });
   }
 }

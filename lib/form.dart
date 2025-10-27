@@ -91,14 +91,8 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
                     );
 
                     Navigator.pop(context, todo);
+                    return;
                   }
-                  if (_title == null) return;
-                  if (_title!.isEmpty) return;
-                  if (_title!.length < 3) return;
-
-                  if (_description == null) return;
-                  if (_description!.isEmpty) return;
-                  if (_description!.length < 20) return;
                 },
                 child: Text("salva!"),
               ),

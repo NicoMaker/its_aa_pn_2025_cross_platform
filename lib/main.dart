@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:its_aa_pn_2025_cross_platform/todo.dart';
 
 void main() {
@@ -30,7 +31,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _list = <Todo>[];
-  String? _text;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
               CheckboxListTile(
                 value: todo.isDone,
                 title: Text(todo.title),
+                subtitle: Text(todo.description),
                 onChanged: (value) {
                   if (value == null) return;
                   setState(() {
@@ -90,42 +91,126 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _createTodo() async {
-    final result = await showDialog<String>(
+    final result = await showDialog<Todo>(
       context: context,
       builder: (context) {
-        return Dialog(
+        return AddTodoFormDialog();
+      },
+    );
+
+    if (result == null) return; // significa che il dialog è stato annullato
+
+    setState(() {
+      _list.add(result);
+    });
+  }
+}
+
+class AddTodoFormDialog extends StatefulWidget {
+  const AddTodoFormDialog({super.key});
+
+  @override
+  State<AddTodoFormDialog> createState() => _AddTodoFormDialogState();
+}
+
+class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
+  final _key = GlobalKey<FormState>();
+
+  String? _title;
+  String? _description;
+  bool _isDone = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _key,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("inserisci qui il titolo"),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: "inserisci almeno 3 caratteri",
-                ),
+              Text("nuovo todo!", style: theme.textTheme.headlineSmall),
+              SizedBox(height: 40),
+              TextFormField(
+                decoration: InputDecoration(hintText: "titolo..."),
+                validator: (value) {
+                  if (value == null) return "campo obbligatorio!";
+                  if (value.isEmpty) return "campo obbligatorio!";
+                  if (value.length < 3) return "inserisci almeno 3 caratteri";
+                  return null;
+                },
                 onChanged: (value) {
-                  _text = value;
-                  print(_text);
+                  _title = value;
                 },
               ),
+              TextFormField(
+                decoration: InputDecoration(hintText: "descrizione..."),
+                validator: (value) {
+                  if (value == null) return "campo obbligatorio";
+                  if (value.isEmpty) return "campo obbligatorio!";
+                  if (value.length < 20) return "inserisci almeno 20 caratteri";
+                  return null;
+                },
+                onChanged: (value) {
+                  _description = value;
+                },
+              ),
+              SizedBox(height: 20),
+              FormField<bool>(
+                initialValue: false,
+                validator: (value) {
+                  if (value == true) return null;
+                  return "devi accettare i termini e condizioni";
+                },
+                errorBuilder: (context, errorText) {
+                  print(errorText);
+                  return Text(errorText);
+                },
+                builder: (field) {
+                  return CheckboxListTile(
+                    value: field.value,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text("accetto i t&c"),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      field.didChange(value);
+                      _isDone = value;
+                    },
+                  );
+                },
+              ),
+              SizedBox(height: 80),
               ElevatedButton(
                 onPressed: () {
-                  print(_text);
-                  if (_text == null) return;
-                  if (_text!.isEmpty) return;
-                  if (_text!.length < 3) return;
-                  Navigator.pop(context, _text);
+                  final state = _key.currentState?.validate();
+                  if (state == true) {
+                    // è valido!
+                    final todo = Todo(
+                      createdAt: DateTime.now(),
+                      title: _title!,
+                      description: _description!,
+                      isDone: _isDone,
+                    );
+
+                    Navigator.pop(context, todo);
+                  }
+                  if (_title == null) return;
+                  if (_title!.isEmpty) return;
+                  if (_title!.length < 3) return;
+
+                  if (_description == null) return;
+                  if (_description!.isEmpty) return;
+                  if (_description!.length < 20) return;
                 },
                 child: Text("salva!"),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
-
-    if (result == null) return; // significa che il dialog è stato
-    final newTodo = Todo(createdAt: DateTime.now(), title: result);
-    setState(() {
-      _list.add(newTodo);
-    });
   }
 }

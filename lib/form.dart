@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:its_aa_pn_2025_cross_platform/todo.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class AddTodoFormDialog extends StatefulWidget {
   const AddTodoFormDialog({super.key});
@@ -9,11 +10,29 @@ class AddTodoFormDialog extends StatefulWidget {
 }
 
 class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
-  final _key = GlobalKey<FormState>();
+  late final FormGroup _form;
 
-  String? _title;
-  String? _description;
-  bool _isDone = false;
+  @override
+  void initState() {
+    super.initState();
+    _form = FormGroup({
+      "title": FormControl<String>(
+        value: "",
+        validators: [RequiredValidator(), MinLengthValidator(3)],
+      ),
+      "description": FormControl<String>(
+        value: "",
+        validators: [RequiredValidator(), MinLengthValidator(20)],
+      ),
+      "t&c": FormControl<bool>(value: false, validators: [RequiredValidator()]),
+    });
+  }
+
+  @override
+  void dispose() {
+    _form.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,84 +41,46 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
     return Dialog(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _key,
+        child: ReactiveForm(
+          formGroup: _form,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("nuovo todo!", style: theme.textTheme.headlineSmall),
               SizedBox(height: 40),
-              TextFormField(
+              ReactiveTextField(
+                formControlName: "title",
                 decoration: InputDecoration(hintText: "titolo..."),
-                validator: (value) {
-                  if (value == null) return "campo obbligatorio!";
-                  if (value.isEmpty) return "campo obbligatorio!";
-                  if (value.length < 3) return "inserisci almeno 3 caratteri";
-                  return null;
-                },
-                onChanged: (value) {
-                  _title = value;
-                },
               ),
-              TextFormField(
+              ReactiveTextField(
+                formControlName: "description",
                 decoration: InputDecoration(hintText: "descrizione..."),
-                validator: (value) {
-                  if (value == null) return "campo obbligatorio";
-                  if (value.isEmpty) return "campo obbligatorio!";
-                  if (value.length < 20) return "inserisci almeno 20 caratteri";
-                  return null;
-                },
-                onChanged: (value) {
-                  _description = value;
-                },
               ),
               SizedBox(height: 20),
-              FormField<bool>(
-                initialValue: false,
-                validator: (value) {
-                  if (value == true) return null;
-                  return "devi accettare i termini e condizioni";
-                },
-                errorBuilder: (context, errorText) {
-                  print(errorText);
-                  return Text(errorText);
-                },
-                builder: (field) {
-                  return CheckboxListTile(
-                    value: field.value,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text("accetto i t&c"),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      field.didChange(value);
-                      _isDone = value;
-                    },
-                  );
-                },
+              ReactiveCheckboxListTile(
+                formControlName: "t&c",
+                contentPadding: EdgeInsets.zero,
+                title: Text("accetto i t&c"),
               ),
               SizedBox(height: 80),
-              ElevatedButton(
-                onPressed: () {
-                  final state = _key.currentState?.validate();
-                  if (state == true) {
-                    // è valido!
-                    final todo = Todo(
-                      createdAt: DateTime.now(),
-                      title: _title!,
-                      description: _description!,
-                      isDone: _isDone,
-                    );
-
-                    Navigator.pop(context, todo);
-                    return;
-                  }
-                },
-                child: Text("salva!"),
-              ),
+              ElevatedButton(onPressed: _submit, child: Text("salva!")),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _submit() {
+    if (!_form.valid) return;
+
+    final todo = Todo(
+      createdAt: DateTime.now(),
+      title: _form.control("title").value,
+      description: _form.control("description").value,
+      isDone: _form.control("t&c").value,
+    );
+
+    Navigator.pop(context, todo);
   }
 }

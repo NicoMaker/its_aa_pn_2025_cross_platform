@@ -78,6 +78,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
               ),
+
+            Expanded(
+              child: Column(
+                children: [
+                  const Text("titolo"),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      print("pippo");
+                    },
+                    label: const Text("premimi ora per un aghio!"),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -102,4 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
       _list.add(result);
     });
   }
+}
+
+String f() {
+  return [1, 2, 3]
+      .map((e) => e * 2)
+      .map((e) => e ~/ 3)
+      .where((element) => element.isEven)
+      .map((e) => "something something")
+      .expand((element) => element.split(" "))
+      .join("-");
 }

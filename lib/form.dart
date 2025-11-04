@@ -18,13 +18,24 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
     _form = FormGroup({
       "title": FormControl<String>(
         value: "",
-        validators: [const RequiredValidator(), const MinLengthValidator(3)],
+        validators: [
+          const RequiredValidator(),
+          const MinLengthValidator(3),
+        ],
       ),
       "description": FormControl<String>(
         value: "",
-        validators: [const RequiredValidator(), const MinLengthValidator(20)],
+        validators: [
+          const RequiredValidator(),
+          const MinLengthValidator(20),
+        ],
       ),
-      "t&c": FormControl<bool>(value: false, validators: [const RequiredValidator()]),
+      "t&c": FormControl<bool>(
+        value: false,
+        validators: [
+          const RequiredValidator(),
+        ],
+      ),
     });
   }
 

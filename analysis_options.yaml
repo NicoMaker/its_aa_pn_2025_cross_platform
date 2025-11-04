@@ -5,3 +5,8 @@ linter:
     prefer_double_quotes: true
     prefer_single_quotes: false
     public_member_api_docs: false
+    lines_longer_than_80_chars: false
+
+formatter:
+  page_width: 90
+  trailing_commas: preserve

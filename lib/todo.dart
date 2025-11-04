@@ -19,7 +19,7 @@ void f() {
     title: "UN POLLOOOOO",
     description: "fagiano",
     isDone: true,
-    expiresAt: DateTime(2026, 01, 01),
+    expiresAt: DateTime(2026),
   );
   print(todo.isDone); // false
 }

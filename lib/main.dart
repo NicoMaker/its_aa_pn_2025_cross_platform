@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:its_aa_pn_2025_cross_platform/form.dart';
-import 'package:its_aa_pn_2025_cross_platform/todo.dart';
+import "package:flutter/material.dart";
+import "package:its_aa_pn_2025_cross_platform/form.dart";
+import "package:its_aa_pn_2025_cross_platform/todo.dart";
 
 void main() {
   runApp(const MyApp());
@@ -12,17 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TODO App',
+      title: "TODO App",
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
       ),
-      home: const MyHomePage(title: 'TODO'),
+      home: const MyHomePage(title: "TODO"),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({required this.title, super.key});
   final String title;
 
   @override
@@ -40,17 +40,15 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: [
           ElevatedButton.icon(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              setState(() {
-                _list.clear();
-              });
+              setState(_list.clear);
             },
-            label: const Text('Reset All'),
+            label: const Text("Reset All"),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           ElevatedButton.icon(
-            icon: Icon(Icons.invert_colors),
+            icon: const Icon(Icons.invert_colors),
             onPressed: () {
               setState(() {
                 for (var i = 0; i < _list.length; i++) {
@@ -58,16 +56,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               });
             },
-            label: const Text('Invert All'),
+            label: const Text("Invert All"),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
         ],
       ),
       body: Center(
         child: ListView(
           children: [
             if (_list.isEmpty) //
-              Text("non c'è niente"),
+              const Text("non c'è niente"),
             for (final (i, todo) in _list.indexed)
               CheckboxListTile(
                 value: todo.isDone,
@@ -85,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createTodo,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -94,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final result = await showDialog<Todo>(
       context: context,
       builder: (context) {
-        return AddTodoFormDialog();
+        return const AddTodoFormDialog();
       },
     );
 

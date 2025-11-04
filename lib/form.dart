@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:its_aa_pn_2025_cross_platform/todo.dart';
-import 'package:reactive_forms/reactive_forms.dart';
+import "package:flutter/material.dart";
+import "package:its_aa_pn_2025_cross_platform/todo.dart";
+import "package:reactive_forms/reactive_forms.dart";
 
 class AddTodoFormDialog extends StatefulWidget {
   const AddTodoFormDialog({super.key});
@@ -18,13 +18,13 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
     _form = FormGroup({
       "title": FormControl<String>(
         value: "",
-        validators: [RequiredValidator(), MinLengthValidator(3)],
+        validators: [const RequiredValidator(), const MinLengthValidator(3)],
       ),
       "description": FormControl<String>(
         value: "",
-        validators: [RequiredValidator(), MinLengthValidator(20)],
+        validators: [const RequiredValidator(), const MinLengthValidator(20)],
       ),
-      "t&c": FormControl<bool>(value: false, validators: [RequiredValidator()]),
+      "t&c": FormControl<bool>(value: false, validators: [const RequiredValidator()]),
     });
   }
 
@@ -47,23 +47,23 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("nuovo todo!", style: theme.textTheme.headlineSmall),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               ReactiveTextField(
                 formControlName: "title",
-                decoration: InputDecoration(hintText: "titolo..."),
+                decoration: const InputDecoration(hintText: "titolo..."),
               ),
               ReactiveTextField(
                 formControlName: "description",
-                decoration: InputDecoration(hintText: "descrizione..."),
+                decoration: const InputDecoration(hintText: "descrizione..."),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ReactiveCheckboxListTile(
                 formControlName: "t&c",
                 contentPadding: EdgeInsets.zero,
-                title: Text("accetto i t&c"),
+                title: const Text("accetto i t&c"),
               ),
-              SizedBox(height: 80),
-              ElevatedButton(onPressed: _submit, child: Text("salva!")),
+              const SizedBox(height: 80),
+              ElevatedButton(onPressed: _submit, child: const Text("salva!")),
             ],
           ),
         ),
@@ -76,9 +76,9 @@ class _AddTodoFormDialogState extends State<AddTodoFormDialog> {
 
     final todo = Todo(
       createdAt: DateTime.now(),
-      title: _form.control("title").value,
-      description: _form.control("description").value,
-      isDone: _form.control("t&c").value,
+      title: _form.control("title").value as String,
+      description: _form.control("description").value as String,
+      isDone: _form.control("t&c").value as bool,
     );
 
     Navigator.pop(context, todo);

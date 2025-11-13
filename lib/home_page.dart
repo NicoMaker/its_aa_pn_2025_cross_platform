@@ -18,21 +18,44 @@ class HomePage extends StatelessWidget {
         child: GridView.count(
           crossAxisCount: 2,
           children: [
-            Card(
-              margin: const EdgeInsets.all(8),
-              child: InkWell(
-                onTap: () async {
-                  await context.push("/counter");
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Center(
-                    child: Text("Esercitazione 1.1"),
-                  ),
-                ),
-              ),
+            _HomeCard(
+              onTap: () async {
+                await context.push("/counter");
+              },
+              label: "Esercitazione 1.1",
+            ),
+            _HomeCard(
+              label: "Esercitazione 1.2",
+              onTap: () async {
+                await context.push("/greet");
+              },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeCard extends StatelessWidget {
+  const _HomeCard({
+    required this.label,
+    required this.onTap,
+  });
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Center(
+            child: Text(label),
+          ),
         ),
       ),
     );

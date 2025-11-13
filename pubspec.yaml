@@ -11,12 +11,15 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
+  flutter_riverpod: ^3.0.3
   reactive_forms: ^18.1.1
 
 dev_dependencies:
+  custom_lint: ^0.8.0
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
+  riverpod_lint: ^3.0.3
   very_good_analysis: ^10.0.0
 
 flutter:

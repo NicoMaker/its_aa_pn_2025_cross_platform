@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:its_aa_pn_2025_cross_platform/form.dart";
 import "package:its_aa_pn_2025_cross_platform/todo.dart";
+import "package:its_aa_pn_2025_cross_platform/todo_list.dart";
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -23,19 +25,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({required this.title, super.key});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _list = <Todo>[];
-
+class _MyHomePageState extends ConsumerState<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    final list = ref.watch(todoListProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -43,21 +45,13 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           ElevatedButton.icon(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(_list.clear);
-            },
+            onPressed: clear,
             label: const Text("Reset All"),
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
             icon: const Icon(Icons.invert_colors),
-            onPressed: () {
-              setState(() {
-                for (var i = 0; i < _list.length; i++) {
-                  _list[i].isDone = !_list[i].isDone;
-                }
-              });
-            },
+            onPressed: invertAll,
             label: const Text("Invert All"),
           ),
           const SizedBox(width: 20),
@@ -66,18 +60,15 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: ListView(
           children: [
-            if (_list.isEmpty) //
+            if (list.isEmpty) //
               const Text("non c'è niente"),
-            for (final (i, todo) in _list.indexed)
+            for (final (i, todo) in list.indexed)
               CheckboxListTile(
                 value: todo.isDone,
                 title: Text(todo.title),
                 subtitle: Text(todo.description),
                 onChanged: (value) {
-                  if (value == null) return;
-                  setState(() {
-                    _list[i].isDone = value;
-                  });
+                  onChecked(i, value: value);
                 },
               ),
 
@@ -98,13 +89,25 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _createTodo,
+        onPressed: createTodo,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Future<void> _createTodo() async {
+  void onChecked(int index, {bool? value}) {
+    ref.read(todoListProvider.notifier).checkElement(index, value: value);
+  }
+
+  void invertAll() {
+    ref.read(todoListProvider.notifier).invertAll();
+  }
+
+  void clear() {
+    ref.read(todoListProvider.notifier).reset();
+  }
+
+  Future<void> createTodo() async {
     final result = await showDialog<Todo>(
       context: context,
       builder: (context) {
@@ -114,9 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (result == null) return; // significa che il dialog è stato annullato
 
-    setState(() {
-      _list.add(result);
-    });
+    ref.read(todoListProvider.notifier).addTodo(result);
   }
 }
 

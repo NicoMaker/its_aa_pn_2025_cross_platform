@@ -42,6 +42,12 @@ class HomePage extends StatelessWidget {
                 await context.push("/todo");
               },
             ),
+            _HomeCard(
+              label: "Esercitazione 2.2",
+              onTap: () async {
+                await context.push("/recipes");
+              },
+            ),
           ],
         ),
       ),

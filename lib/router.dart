@@ -3,6 +3,7 @@ import "package:its_aa_pn_2025_cross_platform/colors_page/pages/colors_page.dart
 import "package:its_aa_pn_2025_cross_platform/counter_page/pages/counter_page.dart";
 import "package:its_aa_pn_2025_cross_platform/home_page.dart";
 import "package:its_aa_pn_2025_cross_platform/personal_greeter/pages/greeter_page.dart";
+import "package:its_aa_pn_2025_cross_platform/todo_riverpod/pages/todo_page.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part "router.g.dart";
@@ -34,6 +35,12 @@ GoRouter router(Ref ref) {
         path: "/colors",
         builder: (context, state) {
           return const ColorsPage();
+        },
+      ),
+      GoRoute(
+        path: "/todo",
+        builder: (context, state) {
+          return const TodoPage();
         },
       ),
     ],

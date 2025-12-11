@@ -1,6 +1,7 @@
+// ignore_for_file: specify_nonobvious_property_types
+
 import "dart:async";
 
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:reactive_forms/reactive_forms.dart";
@@ -45,18 +46,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ReviewListWidget extends StatefulWidget {
+class ReviewListWidget extends ConsumerStatefulWidget {
   const ReviewListWidget({
     super.key,
   });
 
   @override
-  State<ReviewListWidget> createState() => _ReviewListWidgetState();
+  ConsumerState<ReviewListWidget> createState() => _ReviewListWidgetState();
 }
 
-class _ReviewListWidgetState extends State<ReviewListWidget> {
-  List<Review> list = <Review>[];
-
+class _ReviewListWidgetState extends ConsumerState<ReviewListWidget> {
   Future<void> addReview() async {
     final result = await showDialog<Json>(
       context: context,
@@ -67,64 +66,44 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
 
     if (result == null) return;
 
-    final review = Review(
-      title: result["title"]! as String,
-      rating: result["rating"]! as int,
-      comment: result["comment"] as String?,
-    );
-
-    setState(() {
-      list.add(review);
-    });
+    ref.read(reviewsProvider.notifier).addReview(result);
   }
 
-  Future<Review?> editReview(int index) async {
-    final currentReview = list[index];
+  Future<void> editReview(int index) async {
+    final current = ref.read(reviewsProvider)[index];
+
     final result = await showDialog<Json>(
       context: context,
       builder: (context) {
         return Dialog(
           child: EditReviewForm(
-            review: currentReview,
+            review: current,
           ),
         );
       },
     );
 
-    if (result == null) return null;
+    if (result == null) return;
 
-    final editedReview = Review(
-      title: result["title"]! as String,
-      rating: result["rating"]! as int,
-      comment: result["comment"] as String?,
-    );
-
-    setState(() {
-      list[index] = editedReview;
-    });
-
-    return editedReview;
+    ref.read(reviewsProvider.notifier).editReview(index, result);
   }
 
   void deleteReview(int index) {
-    setState(() {
-      list.removeAt(index);
-    });
+    ref.read(reviewsProvider.notifier).deleteReview(index);
   }
 
   Future<void> openDetails(int index) async {
-    final review = list[index];
     await showDialog<void>(
       context: context,
       builder: (context) {
         return Dialog(
           child: ReviewDetailWidget(
-            review: review,
+            index: index,
             onDelete: () {
-              deleteReview(index);
+              ref.read(reviewsProvider.notifier).deleteReview(index);
             },
-            onEdit: () {
-              return editReview(index);
+            onEdit: (form) {
+              ref.read(reviewsProvider.notifier).editReview(index, form);
             },
           ),
         );
@@ -134,6 +113,8 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final list = ref.watch(reviewsProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("le nostre recensioni! 🎉"),
@@ -252,40 +233,35 @@ class _EditReviewFormState extends State<EditReviewForm> {
   }
 }
 
-class ReviewDetailWidget extends StatefulWidget {
+class ReviewDetailWidget extends ConsumerStatefulWidget {
   const ReviewDetailWidget({
-    required this.review,
+    required this.index,
     required this.onDelete,
     required this.onEdit,
     super.key,
   });
-  final Review review;
+  final int index;
   final VoidCallback onDelete;
-  final AsyncValueGetter<Review?> onEdit;
+  final ValueSetter<Json> onEdit;
 
   @override
-  State<ReviewDetailWidget> createState() => _ReviewDetailWidgetState();
+  ConsumerState<ReviewDetailWidget> createState() => _ReviewDetailWidgetState();
 }
 
-class _ReviewDetailWidgetState extends State<ReviewDetailWidget> {
-  late Review review;
-
-  @override
-  void initState() {
-    super.initState();
-    review = widget.review;
-  }
-
+class _ReviewDetailWidgetState extends ConsumerState<ReviewDetailWidget> {
   @override
   Widget build(BuildContext context) {
+    final list = ref.watch(reviewsProvider);
+    final review = list[widget.index];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.review.title),
+        title: Text(review.title),
         actions: [
-          IconButton(
-            onPressed: editReview,
-            icon: const Icon(Icons.edit),
-          ),
+          // IconButton(
+          //   onPressed: editReview,
+          //   icon: const Icon(Icons.edit),
+          // ),
           IconButton(
             onPressed: deleteReview,
             icon: const Icon(Icons.delete),
@@ -295,16 +271,16 @@ class _ReviewDetailWidgetState extends State<ReviewDetailWidget> {
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.review.comment case final value?) Text(value),
+          if (review.comment case final value?) Text(value),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 0; i < widget.review.rating; i++)
+              for (var i = 0; i < review.rating; i++)
                 const Icon(
                   Icons.star,
                   color: Colors.yellow,
                 ),
-              for (var i = 0; i < 5 - widget.review.rating; i++)
+              for (var i = 0; i < 5 - review.rating; i++)
                 const Icon(
                   Icons.star_border,
                   color: Colors.yellow,
@@ -321,13 +297,51 @@ class _ReviewDetailWidgetState extends State<ReviewDetailWidget> {
     Navigator.pop(context);
   }
 
-  Future<void> editReview() async {
-    final edited = await widget.onEdit();
-    if (edited == null) return;
+  // Future<void> editReview() async {
+  //   final edited = widget.onEdit();
+  //   if (edited == null) return;
 
-    setState(() {
-      review = edited;
-    });
+  //   setState(() {
+  //     review = edited;
+  //   });
+  // }
+}
+
+final reviewsProvider = NotifierProvider.autoDispose<ReviewsNotifier, List<Review>>(
+  ReviewsNotifier.new,
+);
+
+class ReviewsNotifier extends Notifier<List<Review>> {
+  @override
+  List<Review> build() {
+    return [];
+  }
+
+  void addReview(Json form) {
+    final newReview = Review(
+      title: form["title"]! as String,
+      rating: form["rating"]! as int,
+      comment: form["comment"] as String?,
+    );
+
+    state.add(newReview);
+    ref.notifyListeners();
+  }
+
+  void editReview(int index, Json form) {
+    final editedReview = Review(
+      title: form["title"]! as String,
+      rating: form["rating"]! as int,
+      comment: form["comment"] as String?,
+    );
+
+    state[index] = editedReview;
+    ref.notifyListeners();
+  }
+
+  void deleteReview(int index) {
+    state.removeAt(index);
+    ref.notifyListeners();
   }
 }
 

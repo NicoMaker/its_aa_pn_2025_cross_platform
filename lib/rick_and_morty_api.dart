@@ -4,9 +4,16 @@ class RickAndMortyApi {
   const RickAndMortyApi(this.client);
   final Dio client;
 
-  Future<RickAndMortyResponse> fetchCharacters() async {
+  Future<RickAndMortyResponse> fetchCharacters({
+    String? query,
+  }) async {
     final result = await client.get<Json>(
       "https://rickandmortyapi.com/api/character",
+      queryParameters: {
+        // not now, dart.
+        // ignore: use_null_aware_elements
+        if (query != null) "name": query,
+      },
     );
     return RickAndMortyResponse.fromJson(result.data!);
   }

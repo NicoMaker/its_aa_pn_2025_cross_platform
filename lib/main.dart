@@ -1,6 +1,7 @@
 import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:flutter_riverpod/misc.dart";
 import "package:its_aa_pn_2025_cross_platform/rick_and_morty_api.dart";
 import "package:talker_dio_logger/talker_dio_logger_interceptor.dart";
 import "package:talker_riverpod_logger/talker_riverpod_logger.dart";
@@ -44,50 +45,74 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class RickAndMortyApp extends ConsumerWidget {
+class RickAndMortyApp extends ConsumerStatefulWidget {
   const RickAndMortyApp({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final result = ref.watch(rickAndMortyProvider);
+  ConsumerState<RickAndMortyApp> createState() => _RickAndMortyAppState();
+}
+
+class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
+  String? q;
+
+  @override
+  Widget build(BuildContext context) {
+    final result = ref.watch(rickAndMortyProvider(q));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Rick and Morty Characters"),
       ),
-      body: switch (result) {
-        AsyncLoading() => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        AsyncError() => const Center(
-          child: Text("qualcosa è andato storto, riprova più tardi"),
-        ),
-        AsyncData(:final value) => ListView(
-          children: [
-            for (final character in value.results)
-              Column(
+      body: Column(
+        spacing: 20,
+        children: [
+          Padding(
+            padding: const .symmetric(horizontal: 320),
+            child: TextField(
+              onSubmitted: (value) {
+                setState(() {
+                  q = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: switch (result) {
+              AsyncLoading() => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              AsyncError() => const Center(
+                child: Text("qualcosa è andato storto, riprova più tardi"),
+              ),
+              AsyncData(:final value) => ListView(
                 children: [
-                  Text(character.name),
-                  Image.network(character.image),
-                  Text(character.status),
+                  for (final character in value.results)
+                    Column(
+                      children: [
+                        Text(character.name),
+                        Image.network(character.image),
+                        Text(character.status),
+                      ],
+                    ),
                 ],
               ),
-          ],
-        ),
-      },
+            },
+          ),
+        ],
+      ),
     );
   }
 }
 
-final FutureProvider<RickAndMortyResponse> rickAndMortyProvider =
-    FutureProvider.autoDispose<RickAndMortyResponse>((ref) async {
+final FutureProviderFamily<RickAndMortyResponse, String?> rickAndMortyProvider =
+    FutureProvider.autoDispose.family<RickAndMortyResponse, String?>((ref, query) async {
       final logger = TalkerDioLogger();
       final client = Dio();
       client.interceptors.add(logger);
       final api = RickAndMortyApi(client);
-      final result = await api.fetchCharacters();
+      final result = await api.fetchCharacters(query: query);
 
       return result;
     });

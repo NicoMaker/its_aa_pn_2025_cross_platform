@@ -52,7 +52,7 @@ void main() {
         submittedAt: DateTime.now(),
       );
 
-      expect(exercise.isPassed(), true);
+      expect(exercise.isPassed, true);
     });
 
     test("should return false when score is below 60", () {

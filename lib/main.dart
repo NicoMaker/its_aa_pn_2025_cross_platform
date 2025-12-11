@@ -59,11 +59,11 @@ class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final result = ref.watch(rickAndMortyProvider(q));
+    final result = ref.watch(episodesProvider(q));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Rick and Morty Characters"),
+        title: const Text("Rick and Morty Episodes"),
       ),
       body: Column(
         spacing: 20,
@@ -88,13 +88,9 @@ class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
               ),
               AsyncData(:final value) => ListView(
                 children: [
-                  for (final character in value.results)
-                    Column(
-                      children: [
-                        Text(character.name),
-                        Image.network(character.image),
-                        Text(character.status),
-                      ],
+                  for (final episode in value.results)
+                    ListTile(
+                      title: Text(episode.name),
                     ),
                 ],
               ),
@@ -110,9 +106,23 @@ final FutureProviderFamily<RickAndMortyResponse, String?> rickAndMortyProvider =
     FutureProvider.autoDispose.family<RickAndMortyResponse, String?>((ref, query) async {
       final logger = TalkerDioLogger();
       final client = Dio();
+      ref.onDispose(client.close);
       client.interceptors.add(logger);
       final api = RickAndMortyApi(client);
       final result = await api.fetchCharacters(query: query);
+
+      return result;
+    });
+
+final FutureProviderFamily<EpisodeResponse, String?> episodesProvider = FutureProvider
+    .autoDispose
+    .family<EpisodeResponse, String?>((ref, query) async {
+      final logger = TalkerDioLogger();
+      final client = Dio();
+      ref.onDispose(client.close);
+      client.interceptors.add(logger);
+      final api = RickAndMortyApi(client);
+      final result = await api.fetchEpisodes(query: query);
 
       return result;
     });

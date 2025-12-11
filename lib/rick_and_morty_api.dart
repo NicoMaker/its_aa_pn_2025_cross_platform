@@ -17,6 +17,20 @@ class RickAndMortyApi {
     );
     return RickAndMortyResponse.fromJson(result.data!);
   }
+
+  Future<EpisodeResponse> fetchEpisodes({
+    String? query,
+  }) async {
+    final result = await client.get<Json>(
+      "https://rickandmortyapi.com/api/episode",
+      queryParameters: {
+        // not now, dart.
+        // ignore: use_null_aware_elements
+        if (query != null) "name": query,
+      },
+    );
+    return EpisodeResponse.fromJson(result.data!);
+  }
 }
 
 class RickAndMortyResponse {
@@ -123,6 +137,57 @@ class CharacterLocation {
 
   final String name;
   final String url;
+}
+
+class EpisodeResponse {
+  const EpisodeResponse({
+    required this.info,
+    required this.results,
+  });
+
+  factory EpisodeResponse.fromJson(Json json) {
+    return EpisodeResponse(
+      info: ResponseInfo.fromJson(json["info"]! as Json),
+      results: (json["results"]! as List<dynamic>)
+          .map((e) => Episode.fromJson(e as Json))
+          .toList(),
+    );
+  }
+
+  final ResponseInfo info;
+  final List<Episode> results;
+}
+
+class Episode {
+  const Episode({
+    required this.id,
+    required this.name,
+    required this.airDate,
+    required this.episode,
+    required this.characters,
+    required this.url,
+    required this.created,
+  });
+
+  factory Episode.fromJson(Json json) {
+    return Episode(
+      id: json["id"]! as int,
+      name: json["name"]! as String,
+      airDate: json["air_date"]! as String,
+      episode: json["episode"]! as String,
+      characters: (json["characters"]! as List<dynamic>).cast<String>(),
+      url: json["url"]! as String,
+      created: json["created"]! as String,
+    );
+  }
+
+  final int id;
+  final String name;
+  final String airDate;
+  final String episode;
+  final List<String> characters;
+  final String url;
+  final String created;
 }
 
 typedef Json = Map<String, Object?>;

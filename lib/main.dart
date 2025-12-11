@@ -59,7 +59,7 @@ class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final result = ref.watch(episodesProvider(q));
+    final result = ref.watch(rickAndMortyProvider(q));
 
     return Scaffold(
       appBar: AppBar(
@@ -88,15 +88,70 @@ class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
               ),
               AsyncData(:final value) => ListView(
                 children: [
-                  for (final episode in value.results)
-                    ListTile(
-                      title: Text(episode.name),
+                  for (final character in value.results)
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              showDialog<void>(
+                                context: context,
+                                builder: (context) {
+                                  return CharacterDetailDialog(
+                                    characterId: character.id,
+                                  );
+                                },
+                              );
+                            },
+                            child: Text(character.name),
+                          ),
+                          Image.network(character.image),
+                        ],
+                      ),
                     ),
                 ],
               ),
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CharacterDetailDialog extends ConsumerWidget {
+  const CharacterDetailDialog({
+    required this.characterId,
+    super.key,
+  });
+  final int characterId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final characterDetails = ref.watch(characterProvider(characterId));
+
+    return Dialog(
+      insetPadding: const .symmetric(
+        horizontal: 480,
+        vertical: 96,
+      ),
+      child: Scaffold(
+        body: Center(
+          child: switch (characterDetails) {
+            AsyncLoading() => const CircularProgressIndicator(),
+            AsyncError() => const Text("qualcosa è andato storto, riprova più tardi"),
+            AsyncData(:final value) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(value.name),
+                Image.network(value.image),
+                Text("Status: ${value.status}"),
+                Text("Species: ${value.species}"),
+              ],
+            ),
+          },
+        ),
       ),
     );
   }
@@ -114,15 +169,30 @@ final FutureProviderFamily<RickAndMortyResponse, String?> rickAndMortyProvider =
       return result;
     });
 
-final FutureProviderFamily<EpisodeResponse, String?> episodesProvider = FutureProvider
+final FutureProviderFamily<EpisodeResponseList, String?> episodesProvider = FutureProvider
     .autoDispose
-    .family<EpisodeResponse, String?>((ref, query) async {
+    .family<EpisodeResponseList, String?>((ref, query) async {
       final logger = TalkerDioLogger();
       final client = Dio();
       ref.onDispose(client.close);
       client.interceptors.add(logger);
       final api = RickAndMortyApi(client);
       final result = await api.fetchEpisodes(query: query);
+
+      return result;
+    });
+
+final FutureProviderFamily<CharacterResponse, int> characterProvider = FutureProvider
+    .autoDispose
+    .family<CharacterResponse, int>((ref, id) async {
+      final logger = TalkerDioLogger();
+      final client = Dio();
+      ref.onDispose(client.close);
+      client.interceptors.add(logger);
+      final api = RickAndMortyApi(client);
+
+      await Future<void>.delayed(const Duration(seconds: 4));
+      final result = await api.fetchCharacterById(id);
 
       return result;
     });

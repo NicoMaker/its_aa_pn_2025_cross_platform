@@ -18,7 +18,7 @@ class RickAndMortyApi {
     return RickAndMortyResponse.fromJson(result.data!);
   }
 
-  Future<EpisodeResponse> fetchEpisodes({
+  Future<EpisodeResponseList> fetchEpisodes({
     String? query,
   }) async {
     final result = await client.get<Json>(
@@ -29,7 +29,15 @@ class RickAndMortyApi {
         if (query != null) "name": query,
       },
     );
-    return EpisodeResponse.fromJson(result.data!);
+    return EpisodeResponseList.fromJson(result.data!);
+  }
+
+  Future<CharacterResponse> fetchCharacterById(int id) async {
+    final result = await client.get<Json>(
+      "https://rickandmortyapi.com/api/character/$id",
+    );
+
+    return CharacterResponse.fromJson(result.data!);
   }
 }
 
@@ -43,13 +51,13 @@ class RickAndMortyResponse {
     return RickAndMortyResponse(
       info: ResponseInfo.fromJson(json["info"]! as Json),
       results: (json["results"]! as List<dynamic>)
-          .map((e) => Character.fromJson(e as Json))
+          .map((e) => CharacterResponse.fromJson(e as Json))
           .toList(),
     );
   }
 
   final ResponseInfo info;
-  final List<Character> results;
+  final List<CharacterResponse> results;
 }
 
 class ResponseInfo {
@@ -75,8 +83,8 @@ class ResponseInfo {
   final String? prev;
 }
 
-class Character {
-  const Character({
+class CharacterResponse {
+  const CharacterResponse({
     required this.id,
     required this.name,
     required this.status,
@@ -91,8 +99,8 @@ class Character {
     required this.created,
   });
 
-  factory Character.fromJson(Json json) {
-    return Character(
+  factory CharacterResponse.fromJson(Json json) {
+    return CharacterResponse(
       id: json["id"]! as int,
       name: json["name"]! as String,
       status: json["status"]! as String,
@@ -139,27 +147,27 @@ class CharacterLocation {
   final String url;
 }
 
-class EpisodeResponse {
-  const EpisodeResponse({
+class EpisodeResponseList {
+  const EpisodeResponseList({
     required this.info,
     required this.results,
   });
 
-  factory EpisodeResponse.fromJson(Json json) {
-    return EpisodeResponse(
+  factory EpisodeResponseList.fromJson(Json json) {
+    return EpisodeResponseList(
       info: ResponseInfo.fromJson(json["info"]! as Json),
       results: (json["results"]! as List<dynamic>)
-          .map((e) => Episode.fromJson(e as Json))
+          .map((e) => EpisodeResponse.fromJson(e as Json))
           .toList(),
     );
   }
 
   final ResponseInfo info;
-  final List<Episode> results;
+  final List<EpisodeResponse> results;
 }
 
-class Episode {
-  const Episode({
+class EpisodeResponse {
+  const EpisodeResponse({
     required this.id,
     required this.name,
     required this.airDate,
@@ -169,8 +177,8 @@ class Episode {
     required this.created,
   });
 
-  factory Episode.fromJson(Json json) {
-    return Episode(
+  factory EpisodeResponse.fromJson(Json json) {
+    return EpisodeResponse(
       id: json["id"]! as int,
       name: json["name"]! as String,
       airDate: json["air_date"]! as String,

@@ -2,6 +2,7 @@ import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:its_aa_pn_2025_cross_platform/rick_and_morty_api.dart";
+import "package:talker_dio_logger/talker_dio_logger_interceptor.dart";
 import "package:talker_riverpod_logger/talker_riverpod_logger.dart";
 
 void main() {
@@ -82,7 +83,9 @@ class RickAndMortyApp extends ConsumerWidget {
 
 final FutureProvider<RickAndMortyResponse> rickAndMortyProvider =
     FutureProvider.autoDispose<RickAndMortyResponse>((ref) async {
+      final logger = TalkerDioLogger();
       final client = Dio();
+      client.interceptors.add(logger);
       final api = RickAndMortyApi(client);
       final result = await api.fetchCharacters();
 

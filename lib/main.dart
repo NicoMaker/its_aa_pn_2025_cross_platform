@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:reactive_forms/reactive_forms.dart";
@@ -39,7 +40,6 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.yellow,
         ),
       ),
-      // TODO: your root goes here
       home: const ReviewListWidget(),
     );
   }
@@ -78,7 +78,7 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
     });
   }
 
-  Future<void> editReview(int index) async {
+  Future<Review?> editReview(int index) async {
     final currentReview = list[index];
     final result = await showDialog<Json>(
       context: context,
@@ -91,7 +91,7 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
       },
     );
 
-    if (result == null) return;
+    if (result == null) return null;
 
     final editedReview = Review(
       title: result["title"]! as String,
@@ -102,12 +102,34 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
     setState(() {
       list[index] = editedReview;
     });
+
+    return editedReview;
   }
 
   void deleteReview(int index) {
     setState(() {
       list.removeAt(index);
     });
+  }
+
+  Future<void> openDetails(int index) async {
+    final review = list[index];
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: ReviewDetailWidget(
+            review: review,
+            onDelete: () {
+              deleteReview(index);
+            },
+            onEdit: () {
+              return editReview(index);
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -124,6 +146,9 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
         children: [
           for (final (i, review) in list.indexed)
             ListTile(
+              onTap: () {
+                unawaited(openDetails(i));
+              },
               title: Text(review.title),
               subtitle: switch (review.comment) {
                 null => null,
@@ -224,6 +249,85 @@ class _EditReviewFormState extends State<EditReviewForm> {
 
   void saveReview() {
     Navigator.pop(context, form.value);
+  }
+}
+
+class ReviewDetailWidget extends StatefulWidget {
+  const ReviewDetailWidget({
+    required this.review,
+    required this.onDelete,
+    required this.onEdit,
+    super.key,
+  });
+  final Review review;
+  final VoidCallback onDelete;
+  final AsyncValueGetter<Review?> onEdit;
+
+  @override
+  State<ReviewDetailWidget> createState() => _ReviewDetailWidgetState();
+}
+
+class _ReviewDetailWidgetState extends State<ReviewDetailWidget> {
+  late Review review;
+
+  @override
+  void initState() {
+    super.initState();
+    review = widget.review;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.review.title),
+        actions: [
+          IconButton(
+            onPressed: editReview,
+            icon: const Icon(Icons.edit),
+          ),
+          IconButton(
+            onPressed: deleteReview,
+            icon: const Icon(Icons.delete),
+          ),
+        ],
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.review.comment case final value?) Text(value),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < widget.review.rating; i++)
+                const Icon(
+                  Icons.star,
+                  color: Colors.yellow,
+                ),
+              for (var i = 0; i < 5 - widget.review.rating; i++)
+                const Icon(
+                  Icons.star_border,
+                  color: Colors.yellow,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void deleteReview() {
+    widget.onDelete();
+    Navigator.pop(context);
+  }
+
+  Future<void> editReview() async {
+    final edited = await widget.onEdit();
+    if (edited == null) return;
+
+    setState(() {
+      review = edited;
+    });
   }
 }
 

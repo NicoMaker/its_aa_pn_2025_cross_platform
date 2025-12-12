@@ -1,4 +1,5 @@
 import "package:dio/dio.dart";
+import "package:its_aa_pn_2025_cross_platform/json.dart";
 
 class RickAndMortyApi {
   const RickAndMortyApi(this.client);
@@ -197,5 +198,3 @@ class EpisodeResponse {
   final String url;
   final String created;
 }
-
-typedef Json = Map<String, Object?>;

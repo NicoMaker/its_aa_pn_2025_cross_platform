@@ -12,3 +12,4 @@ scriviamo un'app che mostra una griglia di ricercati dall'FBI
     - dettagli dall'FBI
     - ricercato perché...?
 4. voglio salvarmi i "ricercati preferiti": voglio mantenere una lista di ricercati che mi voglio salvare per dopo in caso di necessità
+5. paginazione (il server ci restituisce solo i primi 20 elementi; come facciamo ad accedere a quelli successivi?)

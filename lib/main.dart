@@ -1,11 +1,8 @@
-import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
-import "package:flutter_riverpod/misc.dart";
 import "package:its_aa_pn_2025_cross_platform/fbi_list.dart";
 import "package:its_aa_pn_2025_cross_platform/models.dart";
-import "package:its_aa_pn_2025_cross_platform/rick_and_morty_api.dart";
-import "package:talker_dio_logger/talker_dio_logger_interceptor.dart";
+import "package:its_aa_pn_2025_cross_platform/saved_fbi_list.dart";
 import "package:talker_riverpod_logger/talker_riverpod_logger.dart";
 
 void main() {
@@ -53,17 +50,31 @@ class FbiWantedApp extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FbiWantedApp> createState() => _RickAndMortyAppState();
+  ConsumerState<FbiWantedApp> createState() => _FbiWantedAppState();
 }
 
-class _RickAndMortyAppState extends ConsumerState<FbiWantedApp> {
+class _FbiWantedAppState extends ConsumerState<FbiWantedApp> {
   @override
   Widget build(BuildContext context) {
     final wantedList = ref.watch(fbiListProvider);
+    final saved = ref.watch(savedFbiListProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Rick and Morty Episodes"),
+        actions: [
+          Padding(
+            padding: const .symmetric(horizontal: 16),
+            child: Badge.count(
+              isLabelVisible: saved.isNotEmpty,
+              count: saved.length,
+              child: IconButton(
+                onPressed: showSaved,
+                icon: const Icon(Icons.bookmark),
+              ),
+            ),
+          ),
+        ],
       ),
       body: switch (wantedList) {
         AsyncLoading() => const Center(
@@ -106,15 +117,80 @@ class _RickAndMortyAppState extends ConsumerState<FbiWantedApp> {
       },
     );
   }
+
+  void showSaved() {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return const SavedFbiDialog();
+      },
+    );
+  }
 }
 
-class FbiWantedPersonDetailsDialog extends StatelessWidget {
+class SavedFbiDialog extends ConsumerWidget {
+  const SavedFbiDialog({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final list = ref.watch(savedFbiListProvider);
+
+    final theme = Theme.of(context);
+
+    return Dialog(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("my favorite criminals! 💅🏽"),
+        ),
+        body: list.isEmpty
+            ? Center(
+                child: Text(
+                  "you don't have any favorite felon, yet ☹️",
+                  style: theme.textTheme.headlineSmall,
+                ),
+              )
+            : ListView(
+                children: [
+                  for (final wantedPerson in list)
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          if (wantedPerson.previewImage case final value?)
+                            Image.network(
+                              value,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.image);
+                              },
+                            )
+                          else
+                            const Text("no images found"),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class FbiWantedPersonDetailsDialog extends ConsumerStatefulWidget {
   const FbiWantedPersonDetailsDialog(
     this.wanted, {
     super.key,
   });
   final FbiModel wanted;
 
+  @override
+  ConsumerState<FbiWantedPersonDetailsDialog> createState() =>
+      _FbiWantedPersonDetailsDialogState();
+}
+
+class _FbiWantedPersonDetailsDialogState
+    extends ConsumerState<FbiWantedPersonDetailsDialog> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -125,18 +201,30 @@ class FbiWantedPersonDetailsDialog extends StatelessWidget {
         vertical: 96,
       ),
       child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: saveForLater,
+              icon: const Icon(Icons.save),
+            ),
+            IconButton(
+              onPressed: remove,
+              icon: const Icon(Icons.delete),
+            ),
+          ],
+        ),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(wanted.displayDetails),
-              Text(wanted.displayReason),
+              Text(widget.wanted.displayDetails),
+              Text(widget.wanted.displayReason),
               SizedBox(
                 height: size.height * 0.4,
                 child: ListView(
                   scrollDirection: .horizontal,
                   children: [
-                    for (final image in wanted.images) //
+                    for (final image in widget.wanted.images) //
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: Image.network(image),
@@ -144,54 +232,22 @@ class FbiWantedPersonDetailsDialog extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(wanted.displayAge),
-              Text(wanted.displayHeight),
-              Text(wanted.displayWeight),
-              Text(wanted.displayReward),
+              Text(widget.wanted.displayAge),
+              Text(widget.wanted.displayHeight),
+              Text(widget.wanted.displayWeight),
+              Text(widget.wanted.displayReward),
             ],
           ),
         ),
       ),
     );
   }
+
+  void saveForLater() {
+    ref.read(savedFbiListProvider.notifier).addFavorite(widget.wanted);
+  }
+
+  void remove() {
+    ref.read(savedFbiListProvider.notifier).removeFavorite(widget.wanted);
+  }
 }
-
-final FutureProviderFamily<RickAndMortyResponse, String?> rickAndMortyProvider =
-    FutureProvider.autoDispose.family<RickAndMortyResponse, String?>((ref, query) async {
-      final logger = TalkerDioLogger();
-      final client = Dio();
-      ref.onDispose(client.close);
-      client.interceptors.add(logger);
-      final api = RickAndMortyApi(client);
-      final result = await api.fetchCharacters(query: query);
-
-      return result;
-    });
-
-final FutureProviderFamily<EpisodeResponseList, String?> episodesProvider = FutureProvider
-    .autoDispose
-    .family<EpisodeResponseList, String?>((ref, query) async {
-      final logger = TalkerDioLogger();
-      final client = Dio();
-      ref.onDispose(client.close);
-      client.interceptors.add(logger);
-      final api = RickAndMortyApi(client);
-      final result = await api.fetchEpisodes(query: query);
-
-      return result;
-    });
-
-final FutureProviderFamily<CharacterResponse, int> characterProvider = FutureProvider
-    .autoDispose
-    .family<CharacterResponse, int>((ref, id) async {
-      final logger = TalkerDioLogger();
-      final client = Dio();
-      ref.onDispose(client.close);
-      client.interceptors.add(logger);
-      final api = RickAndMortyApi(client);
-
-      await Future<void>.delayed(const Duration(seconds: 4));
-      final result = await api.fetchCharacterById(id);
-
-      return result;
-    });

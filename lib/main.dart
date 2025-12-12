@@ -56,7 +56,7 @@ class FbiWantedApp extends ConsumerStatefulWidget {
 class _FbiWantedAppState extends ConsumerState<FbiWantedApp> {
   @override
   Widget build(BuildContext context) {
-    final wantedList = ref.watch(fbiListProvider);
+    final wantedList = ref.watch(fbiListProvider(1));
     final saved = ref.watch(savedFbiListProvider);
 
     return Scaffold(
@@ -83,36 +83,46 @@ class _FbiWantedAppState extends ConsumerState<FbiWantedApp> {
         AsyncError() => const Center(
           child: Text("qualcosa è andato storto, riprova più tardi"),
         ),
-        AsyncData(:final value) => ListView(
-          children: [
-            for (final wantedPerson in value)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: InkWell(
-                  onTap: () {
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) {
-                        return FbiWantedPersonDetailsDialog(wantedPerson);
-                      },
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      if (wantedPerson.previewImage case final value?)
-                        Image.network(
-                          value,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.image);
-                          },
-                        )
-                      else
-                        const Text("no images found"),
-                    ],
-                  ),
+        AsyncData() => ListView.builder(
+          itemBuilder: (context, index) {
+            const pageSize = 20;
+            final currentPage = index ~/ pageSize + 1;
+            final offset = index % pageSize;
+
+            final list = ref.watch(fbiListProvider(currentPage));
+
+            final asyncList = list.value;
+            if (asyncList == null) return null;
+
+            final wantedPerson = asyncList[offset];
+
+            return Padding(
+              padding: const EdgeInsets.all(8),
+              child: InkWell(
+                onTap: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (context) {
+                      return FbiWantedPersonDetailsDialog(wantedPerson);
+                    },
+                  );
+                },
+                child: Column(
+                  children: [
+                    if (wantedPerson.previewImage case final value?)
+                      Image.network(
+                        value,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.image);
+                        },
+                      )
+                    else
+                      const Text("no images found"),
+                  ],
                 ),
               ),
-          ],
+            );
+          },
         ),
       },
     );

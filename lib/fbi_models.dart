@@ -22,9 +22,36 @@ class FbiWantedResponse {
   final int page;
 }
 
+/// Model for an image from the FBI API
+class FbiImage {
+  FbiImage({
+    this.caption,
+    this.original,
+    this.large,
+    this.thumb,
+  });
+
+  factory FbiImage.fromJson(Map<String, dynamic> json) {
+    return FbiImage(
+      caption: json["caption"] as String?,
+      original: json["original"] as String?,
+      large: json["large"] as String?,
+      thumb: json["thumb"] as String?,
+    );
+  }
+
+  final String? caption;
+  final String? original;
+  final String? large;
+  final String? thumb;
+}
+
 /// Model for an individual wanted person from the FBI API
 class FbiWantedPerson {
   FbiWantedPerson({
+    this.title,
+    this.aliases,
+    this.images,
     this.rewardMin,
     this.rewardMax,
     this.rewardText,
@@ -42,6 +69,11 @@ class FbiWantedPerson {
 
   factory FbiWantedPerson.fromJson(Map<String, dynamic> json) {
     return FbiWantedPerson(
+      title: json["title"] as String?,
+      aliases: (json["aliases"] as List<dynamic>?)?.cast<String>(),
+      images: (json["images"] as List<dynamic>?)
+          ?.map((e) => FbiImage.fromJson(e as Map<String, dynamic>))
+          .toList(),
       rewardMin: json["reward_min"] as int?,
       rewardMax: json["reward_max"] as int?,
       rewardText: json["reward_text"] as String?,
@@ -57,6 +89,14 @@ class FbiWantedPerson {
       caution: json["caution"] as String?,
     );
   }
+
+  // Name fields
+  final String? title;
+  final List<String>? aliases;
+
+  // Image metadata
+  final List<FbiImage>? images;
+
   // Reward fields
   final int? rewardMin;
   final int? rewardMax;

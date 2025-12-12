@@ -2,6 +2,8 @@ import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:flutter_riverpod/misc.dart";
+import "package:its_aa_pn_2025_cross_platform/fbi_list.dart";
+import "package:its_aa_pn_2025_cross_platform/models.dart";
 import "package:its_aa_pn_2025_cross_platform/rick_and_morty_api.dart";
 import "package:talker_dio_logger/talker_dio_logger_interceptor.dart";
 import "package:talker_riverpod_logger/talker_riverpod_logger.dart";
@@ -40,96 +42,82 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.yellow,
         ),
       ),
-      home: const RickAndMortyApp(),
+      home: const FbiWantedApp(),
     );
   }
 }
 
-class RickAndMortyApp extends ConsumerStatefulWidget {
-  const RickAndMortyApp({
+class FbiWantedApp extends ConsumerStatefulWidget {
+  const FbiWantedApp({
     super.key,
   });
 
   @override
-  ConsumerState<RickAndMortyApp> createState() => _RickAndMortyAppState();
+  ConsumerState<FbiWantedApp> createState() => _RickAndMortyAppState();
 }
 
-class _RickAndMortyAppState extends ConsumerState<RickAndMortyApp> {
-  String? q;
-
+class _RickAndMortyAppState extends ConsumerState<FbiWantedApp> {
   @override
   Widget build(BuildContext context) {
-    final result = ref.watch(rickAndMortyProvider(q));
+    final wantedList = ref.watch(fbiListProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Rick and Morty Episodes"),
       ),
-      body: Column(
-        spacing: 20,
-        children: [
-          Padding(
-            padding: const .symmetric(horizontal: 320),
-            child: TextField(
-              onSubmitted: (value) {
-                setState(() {
-                  q = value;
-                });
-              },
-            ),
-          ),
-          Expanded(
-            child: switch (result) {
-              AsyncLoading() => const Center(
-                child: CircularProgressIndicator(),
+      body: switch (wantedList) {
+        AsyncLoading() => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        AsyncError() => const Center(
+          child: Text("qualcosa è andato storto, riprova più tardi"),
+        ),
+        AsyncData(:final value) => ListView(
+          children: [
+            for (final wantedPerson in value)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: InkWell(
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) {
+                        return FbiWantedPersonDetailsDialog(wantedPerson);
+                      },
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      if (wantedPerson.previewImage case final value?)
+                        Image.network(
+                          value,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.image);
+                          },
+                        )
+                      else
+                        const Text("no images found"),
+                    ],
+                  ),
+                ),
               ),
-              AsyncError() => const Center(
-                child: Text("qualcosa è andato storto, riprova più tardi"),
-              ),
-              AsyncData(:final value) => ListView(
-                children: [
-                  for (final character in value.results)
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              showDialog<void>(
-                                context: context,
-                                builder: (context) {
-                                  return CharacterDetailDialog(
-                                    characterId: character.id,
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(character.name),
-                          ),
-                          Image.network(character.image),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            },
-          ),
-        ],
-      ),
+          ],
+        ),
+      },
     );
   }
 }
 
-class CharacterDetailDialog extends ConsumerWidget {
-  const CharacterDetailDialog({
-    required this.characterId,
+class FbiWantedPersonDetailsDialog extends StatelessWidget {
+  const FbiWantedPersonDetailsDialog(
+    this.wanted, {
     super.key,
   });
-  final int characterId;
+  final FbiModel wanted;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final characterDetails = ref.watch(characterProvider(characterId));
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
 
     return Dialog(
       insetPadding: const .symmetric(
@@ -138,19 +126,30 @@ class CharacterDetailDialog extends ConsumerWidget {
       ),
       child: Scaffold(
         body: Center(
-          child: switch (characterDetails) {
-            AsyncLoading() => const CircularProgressIndicator(),
-            AsyncError() => const Text("qualcosa è andato storto, riprova più tardi"),
-            AsyncData(:final value) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(value.name),
-                Image.network(value.image),
-                Text("Status: ${value.status}"),
-                Text("Species: ${value.species}"),
-              ],
-            ),
-          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(wanted.displayDetails),
+              Text(wanted.displayReason),
+              SizedBox(
+                height: size.height * 0.4,
+                child: ListView(
+                  scrollDirection: .horizontal,
+                  children: [
+                    for (final image in wanted.images) //
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Image.network(image),
+                      ),
+                  ],
+                ),
+              ),
+              Text(wanted.displayAge),
+              Text(wanted.displayHeight),
+              Text(wanted.displayWeight),
+              Text(wanted.displayReward),
+            ],
+          ),
         ),
       ),
     );

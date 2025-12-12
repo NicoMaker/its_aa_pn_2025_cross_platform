@@ -46,6 +46,11 @@ final FutureProvider<List<FbiModel>> fbiListProvider =
           FbiWantedPerson(weightMin: null, weightMax: null) => "unkown weight",
         };
 
+        final images = serverModel.images
+            ?.map((fbiImage) => fbiImage.original)
+            .nonNulls
+            .toList();
+
         return FbiModel(
           displayReward: serverModel.rewardText ?? "there's no reward for this person",
           displayDetails: serverModel.details ?? "FBI released no details",
@@ -54,6 +59,7 @@ final FutureProvider<List<FbiModel>> fbiListProvider =
           displayAge: displayAge,
           displayWeight: displayWeight,
           displayHeight: displayHeight,
+          images: images ?? [],
         );
       }).toList();
     });

@@ -1,20 +1,30 @@
-# rick and morty app!
+# cats or dogs?
 
-Scriviamo un'app per visualizzare la lista degli episodi di Rick and Morty!!
+L'obiettivo di questa app è scorrere una GRIGLIA (scrollabile) dei vostri animaletti preferiti!
 
-## 1. le API
+## requisiti
 
-dovete prendere i dati da https://rickandmortyapi.com/api/episode
+scorrere una lista di "razze"
+quando clicco su una razza, vedo la pagina di dettaglio che mostra una griglia di foto di quella razza
 
-tipizzate le risposte in data classes come al solito (vedete il codice passato).
-sì, potete farvi aiutare da un LLM per questo passaggio
+ESEMPIO
+    labrador
+    bassotto (*) -->
+                    [
+                        [foto 1]  [foto 2]  [foto 3]
+                    ]
+    lagotto
 
-## 2. riverpod
 
-scrivete la logica per iniettare la classe API, per invocare l'endpoint e restituirne il risultato
+infine, è possibile aggiungere ai preferiti una o più razze
+quindi, ci teniamo in memoria quali sono, ed è possibile cliccare alla lista delle razze preferite e rimuoverle
 
-## 3. UI
+## ti piacciono i cani?
 
-scrivete l'API mostrando (nel caso `AsyncData`) una `ListView` con la lista degli episodi!
+https://dog.ceo/dog-api/documentation/breed
 
-è sufficiente mostrare una lista di `ListTile`, con titolo il nome dell'episodio e sottotitolo la data di trasmissione
+
+## ti piacciono i gatti?
+
+https://developers.thecatapi.com/view-account/ylX4blBYT9FaoVd6OhvR?report=FJkYOq9tW
+

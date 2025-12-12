@@ -21,10 +21,15 @@ quindi, ci teniamo in memoria quali sono, ed è possibile cliccare alla lista de
 
 ## ti piacciono i cani?
 
-https://dog.ceo/dog-api/documentation/breed
+lista di razze:
+    - https://dog.ceo/api/breeds/list/all
+immagini:
+    - https://dog.ceo/api/breed/[breed_id]/images
 
 
 ## ti piacciono i gatti?
 
-https://developers.thecatapi.com/view-account/ylX4blBYT9FaoVd6OhvR?report=FJkYOq9tW
-
+lista di razze:
+    - https://api.thecatapi.com/v1/breeds
+immagini:
+    - https://api.thecatapi.com/v1/images/search?breed_ids=[breed_id]&limit=10

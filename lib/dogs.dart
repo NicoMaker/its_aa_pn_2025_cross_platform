@@ -27,3 +27,25 @@ final dogImagesByBreedProvider = FutureProvider.autoDispose
       final images = await api.fetchImages(breedId);
       return images;
     });
+
+final dogFavoriteBreedsProvider =
+    NotifierProvider.autoDispose<DogFavoriteBreedsNotifier, List<String>>(
+      DogFavoriteBreedsNotifier.new,
+    );
+
+class DogFavoriteBreedsNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() {
+    return [];
+  }
+
+  void toggleFavorite(String breedId) {
+    final index = state.indexOf(breedId);
+    if (index == -1) {
+      state.add(breedId);
+    } else {
+      state.removeAt(index);
+    }
+    ref.notifyListeners();
+  }
+}

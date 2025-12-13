@@ -32,4 +32,4 @@ immagini:
 lista di razze:
     - https://api.thecatapi.com/v1/breeds
 immagini:
-    - https://api.thecatapi.com/v1/images/search?breed_ids=[breed_id]&limit=10
+    - https://api.thecatapi.com/v1/images/search?breed_id=[breed_id]&limit=10

@@ -25,3 +25,25 @@ final catImagesByBreedProvider = FutureProvider.autoDispose
       final api = CatApi(dio);
       return api.fetchImagesByBreed(breedId);
     });
+
+final catFavoriteBreedsProvider =
+    NotifierProvider.autoDispose<CatFavoriteBreedsNotifier, List<CatBreed>>(
+      CatFavoriteBreedsNotifier.new,
+    );
+
+class CatFavoriteBreedsNotifier extends Notifier<List<CatBreed>> {
+  @override
+  List<CatBreed> build() {
+    return [];
+  }
+
+  void toggleFavorite(CatBreed breed) {
+    final index = state.indexOf(breed);
+    if (index == -1) {
+      state.add(breed);
+    } else {
+      state.removeAt(index);
+    }
+    ref.notifyListeners();
+  }
+}

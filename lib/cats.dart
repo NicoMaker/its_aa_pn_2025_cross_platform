@@ -13,14 +13,14 @@ final dioProvider = Provider.autoDispose<Dio>((ref) {
   return client;
 });
 
-final catBreedsProvider = FutureProvider.autoDispose<List<CatBreed>>((ref) async {
+final catBreedsProvider = FutureProvider.autoDispose<List<CatBreed>>((ref) {
   final dio = ref.watch(dioProvider);
   final api = CatApi(dio);
   return api.fetchBreeds();
 });
 
 final catImagesByBreedProvider = FutureProvider.autoDispose
-    .family<List<CatImage>, String>((ref, breedId) async {
+    .family<List<CatImage>, String>((ref, breedId) {
       final dio = ref.watch(dioProvider);
       final api = CatApi(dio);
       return api.fetchImagesByBreed(breedId);
